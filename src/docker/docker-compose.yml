@@ -12,7 +12,7 @@ services:
       - DB_NAME=gitlabhq_production
       - DB_EXTENSION=pg_trgm
     volumes:
-      - /srv/docker/gitlab/postgresql:/var/lib/postgresql
+      - /srv/docker/gitlab/postgresql:/var/lib/postgresql:z
 
   gitlab:
     restart: "no"
@@ -80,13 +80,13 @@ services:
       - IMAP_SSL=true
       - IMAP_STARTTLS=false
     volumes:
-      - /srv/docker/gitlab/gitlab:/home/git/data
+      - /srv/docker/gitlab/gitlab:/home/git/data:z
 
   redis:
     restart: "no"
     image: sameersbn/redis:latest
     volumes:
-      - /srv/docker/gitlab/redis:/var/lib/redis
+     - /srv/docker/gitlab/redis:/var/lib/redis:z
 
   jenkins:
     restart: "no"
@@ -95,4 +95,5 @@ services:
       - "8080:8080"
       - "50000:50000"
     volumes:
-      - /srv/docker/jenkins:/var/jenkins_home
+      - /srv/docker/jenkins:/var/jenkins_home:z
+
