@@ -1,0 +1,10 @@
+# We had those in the upper form @https://app.codeship.com/projects/322801/tests/edit .
+#  Obviously I've not read https://documentation.codeship.com/basic/builds-and-configuration/root-level-access/#what-cant-you-do as I'd know docker-compose won't work here and I should use CS Pro, which I got suggested later in the CS (build )log.
+# cd gitlab-plugin/ # CS pipeline does it already
+#cd src/docker/ && ./setupVolumes.sh && docker-compose up
+#\~>
+cd src/docker/ && ./setupVolumes.sh
+uname -a
+lsb_release -a
+docker-compose up # Here we've fallen and got the advise
+#<~\
