@@ -1,0 +1,81 @@
+# This is legacy snippets set, where docker-compose replaces most of it in our current setting.
+#   Still useful are inspectJenkins, browseJenkins
+.DEFAULT_GOAL := inspectJenkins
+
+# Those won't work here as they expect Makefile in repo's root
+REPO = $(notdir $(shell pwd)) # Warning `make -f` will probably fail, so just trigger make from the directory of/containig this file..although not not sure here in subdir
+REPO = $(notdir $(CURDIR))# Now we can as well do it like this noting the limitation( above explained) in a more explicit manner.
+	# ^Sometime it'd be better to use the name of the master repository as the folder can be (re)named arbitrarily...but such renaming should be something done being aware of consequences..;)
+TAG:="`git rev-list --count HEAD`on`date +%F--%H`"
+	# ^folder hash would be better
+IMAGEID = $(REPO):$(TAG)
+
+#Cops of the compose.yml, should likely be read from it
+PORT_JENKI=8090
+# Mapping is solved by compose..
+## TO_BE_MAPPED_OUT=/opt/app/;HOST_MAPPING_DEST=/mapped$(TAG)
+
+buildDockerImage:
+	-mkdir $(FINAL_IMAGE_DESTINATION)
+
+	@# We used to   docker run -d -p 5000:5000 --restart=always --name registry registry:2 || ...but it makes no( or not much yet) sense for us
+	@echo "Building $(IMAGEID)..."
+	sudo docker build -t $(IMAGEID) .
+	#########################################################
+	@echo
+
+	@# Making a top-of-the-stack image taged as latest is incredibly useful.( Among other it makes it super-easy for the other targets to run only the latest that has been build which could differ from the $(TAG).(!))
+	if [ `sudo docker images $(REPO) | grep ' latest ' ` ]; then sudo docker rmi -f $(REPO):latest; fi # &> /dev/null; fi
+	@echo
+	@echo Tagging ie. naming $(IMAGEID) as $(REPO):latest
+	sudo docker tag $(IMAGEID) $(REPO):latest
+
+runCompsed:
+	sudo docker-compose up
+
+stopDockerContainer:
+	- sudo docker stop $(REPO) 
+	@# `stop` seems better than `docker kill $(REPO)`, slower but can be continued by `docker start` with the data still preserved( unless the host machine got restarted)
+	@# Using the name given previously which is a good advantage and simplification.
+	# Using `docker commit` before or immediately after this should be highly recommended.
+
+startStoppedContainer:
+	docker start $(REPO)
+
+browseJenkins:
+	xdg-open http://localhost:$(PORT_JENKI) &
+
+showLatestAfterWeStartIt:
+	-make runLatest # Sure @todo is to use `.PHONY: runDockerImageAsContainer` above and invoke it here somehow..
+	@# @echo Latest build was $(IMAGEID) " ;)" # Stupidity of it's purest mistakingness.!.
+	@#xdg-open http://localhost:$(PORT_EXPOSED) &
+	-make browseOnDestination
+
+# renameContainerAfterWeStopIt:
+# 	-make stopDockerContainer
+# 	-make renameContainer
+
+renameContainer:
+	sudo docker rename $(REPO) `echo -n $(REPO) #-n won't add newline``date +%F--%H-%M-%S` # Will make the name like "$(REPO)2016-12-12--18-24-37" which is fine( for docker).
+
+#   Only little tested, use with caution thus.
+restartContainer:
+	# This should be some basic iterative restart of the container for the newly built( one) from source..:
+	-make stopDockerContainer
+	@# Should commit to store data or warn or something like so?.?
+	@# The port needs to be mapped out here.
+	-make renameContainer # Rename the old container to avoid conflict
+	make runLatest
+
+#Based on the above this is also useful shortcut..:
+rebuildSafely:
+	# Stop old and make new running..:
+	-make stopDockerContainer # Needed for the ports to be accessible for the new version being built
+	-make renameContainer # Rename the old container to avoid conflict
+	make buildDockerImage
+	make runLatest
+
+
+#inspectDockerContainer:
+inspectJenkins:
+	sudo docker exec -it jenki-composed sh -c "export TERM=screen-256color; exec bash" # Nicely working setup command for inspecting interactively.
