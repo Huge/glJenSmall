@@ -78,7 +78,7 @@ rebuildSafely:
 
 #inspectDockerContainer:
 inspectJenkins:
-	sudo docker exec -it jenki-composed sh -c "export TERM=screen-256color; exec bash" # Nicely working setup command for inspecting interactively.
+	docker exec -it jenki-composed sh -c "export TERM=screen-256color; exec bash" # Nicely working setup command for inspecting interactively.
 
 #ADMINS_PASS:=`docker exec -it jenki-composed cat /var/jenkins_home/secrets/initialAdminPassword`
 RUN_INSIDE="java -jar /var/jenkins_home/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 -http -auth admin:$(ADMINS_PASS) who-am-i "	
