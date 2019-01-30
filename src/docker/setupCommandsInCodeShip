@@ -3,10 +3,10 @@
 # cd gitlab-plugin/ # CS pipeline does it already
 #cd src/docker/ && ./setupVolumes.sh && docker-compose up
 #\~>
-cd src/docker/ && ./setupVolumes.sh
+#cd src/docker/ && ./setupVolumes.sh
 #uname -a #Gave: Linux trusty_d89c0d94-2962-436c-9bb3-d4aa74b1706c_a928c31d5113 4.15.0-1031-aws #33-Ubuntu SMP(...)
 #lsb_release -a # Ubuntu 14.04.5 LTS
 #docker-compose up # Here we've fallen and got the advise( once).
 #<~\
-which jenkins OR\
+which jenkins ||\
 apt-get install jenkins
