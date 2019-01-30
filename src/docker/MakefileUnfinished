@@ -1,6 +1,6 @@
 # This is legacy snippets set, where docker-compose replaces most of it in our current setting.
-#   Still useful are inspectJenkins, browseJenkins
-.DEFAULT_GOAL := inspectJenkins
+#   Still useful are inspectJenkins,
+.DEFAULT_GOAL := inspectJenkins, browseJenkins
 
 # Those won't work here as they expect Makefile in repo's root
 REPO = $(notdir $(shell pwd)) # Warning `make -f` will probably fail, so just trigger make from the directory of/containig this file..although not not sure here in subdir
@@ -10,7 +10,7 @@ TAG:="`git rev-list --count HEAD`on`date +%F--%H`"
 	# ^folder hash would be better
 IMAGEID = $(REPO):$(TAG)
 
-#Cops of the compose.yml, should likely be read from it
+#Copies from the compose.yml, should likely be read from it
 PORT_JENKI=8090
 # Mapping is solved by compose..
 ## TO_BE_MAPPED_OUT=/opt/app/;HOST_MAPPING_DEST=/mapped$(TAG)
@@ -79,3 +79,15 @@ rebuildSafely:
 #inspectDockerContainer:
 inspectJenkins:
 	sudo docker exec -it jenki-composed sh -c "export TERM=screen-256color; exec bash" # Nicely working setup command for inspecting interactively.
+
+#ADMINS_PASS:=`docker exec -it jenki-composed cat /var/jenkins_home/secrets/initialAdminPassword`
+RUN_INSIDE="java -jar /var/jenkins_home/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 -http -auth admin:$(ADMINS_PASS) who-am-i "	
+jenk-cli-in-his-container:
+	@#java -jar /var/jenkins_home/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 -http -auth admin:`cat /var/jenkins_home/secrets/initialAdminPassword` who-am-i 
+		@# works in there..now let's tune it..:
+	#RUN_INSIDE="java -jar /var/jenkins_home/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080 -http -auth admin:`cat /var/jenkins_home/secrets/initialAdminPassword` who-am-i "
+		@#^needs to get split, like this:
+	@#ADMINS_PASS:=docker exec -it jenki-composed cat /var/jenkins_home/secrets/initialAdminPassword
+	$(eval ADMINS_PASS = $(docker exec -it jenki-composed "cat /var/jenkins_home/secrets/initialAdminPassword"))
+
+	docker exec -it jenki-composed sh -c $(RUN_INSIDE)
